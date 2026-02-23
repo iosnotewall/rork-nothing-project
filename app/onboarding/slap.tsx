@@ -22,10 +22,10 @@ const BODY_LINES = [
   "most people don't feel the difference from their supplements.",
 ];
 
-const LINE_READ_DELAY = 1000;
-const BODY_START_DELAY = 700;
-const BODY_LINE_DELAY = 800;
-const FADE_DURATION = 600;
+const LINE_READ_DELAY = 550;
+const BODY_START_DELAY = 400;
+const BODY_LINE_DELAY = 450;
+const FADE_DURATION = 350;
 
 export default function SlapScreen() {
   const router = useRouter();
@@ -48,7 +48,7 @@ export default function SlapScreen() {
     const easing = Easing.out(Easing.cubic);
 
     const headingSequence = headingAnims.flatMap((anim, i) => [
-      ...(i === 0 ? [Animated.delay(500)] : [Animated.delay(LINE_READ_DELAY)]),
+      ...(i === 0 ? [Animated.delay(300)] : [Animated.delay(LINE_READ_DELAY)]),
       Animated.timing(anim, { toValue: 1, duration: FADE_DURATION, useNativeDriver: Platform.OS !== 'web', easing }),
     ]);
 
@@ -60,8 +60,8 @@ export default function SlapScreen() {
     Animated.sequence([
       ...headingSequence,
       ...bodySequence,
-      Animated.delay(400),
-      Animated.timing(footerAnim, { toValue: 1, duration: 500, useNativeDriver: Platform.OS !== 'web', easing }),
+      Animated.delay(250),
+      Animated.timing(footerAnim, { toValue: 1, duration: 350, useNativeDriver: Platform.OS !== 'web', easing }),
     ]).start();
 
     const hapticDelay = 500 + FADE_DURATION + LINE_READ_DELAY + FADE_DURATION + LINE_READ_DELAY;
