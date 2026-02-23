@@ -46,7 +46,7 @@ export default function ConsiderScreen() {
         ]}
       >
         <Text style={styles.text}>
-          alright {userName || 'friend'},{'\n'}consider this...
+          ever feel like you bought{'\n'}all these supplements that{'\n'}are doing nothing?
         </Text>
       </Animated.View>
     </View>
@@ -66,10 +66,10 @@ const styles = StyleSheet.create({
   },
   text: {
     fontFamily: Fonts.heading,
-    fontSize: 34,
+    fontSize: 28,
     color: Colors.mediumGray,
     textAlign: 'center' as const,
-    lineHeight: 46,
+    lineHeight: 38,
     letterSpacing: -0.3,
   },
 });
