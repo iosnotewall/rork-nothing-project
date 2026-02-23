@@ -105,13 +105,15 @@ export default function ImpactScreen() {
     router.push('/onboarding/goal' as any);
   }, [router]);
 
+  const namePrefix = userName ? `${userName},` : 'Your';
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.content}>
         <Animated.View style={[styles.topSection, fadeSlide(sceneAnim)]}>
           <Text style={styles.eyebrow}>YOUR REALITY CHECK</Text>
-          <Text style={styles.headline}>
-            {userName || 'Your'} supplements{'\n'}are only working at
+          <Text style={styles.headline} numberOfLines={2} adjustsFontSizeToFit>
+            {namePrefix} supplements are only working at
           </Text>
         </Animated.View>
 
