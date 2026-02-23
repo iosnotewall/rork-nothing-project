@@ -13,7 +13,9 @@ export default function ImpactScreen() {
   const insets = useSafeAreaInsets();
   const { userName, missedDoses } = useAppState();
 
-  const missedPerYear = missedDoses * 52;
+  const daysPerWeek = missedDoses ?? 3;
+  const missedPerWeek = 7 - daysPerWeek;
+  const missedPerYear = missedPerWeek * 52;
   const weeksLost = Math.round(missedPerYear / 7);
   const monthsLost = Math.round(weeksLost / 4.3);
 
@@ -22,6 +24,7 @@ export default function ImpactScreen() {
   const line3Anim = useRef(new Animated.Value(0)).current;
   const line4Anim = useRef(new Animated.Value(0)).current;
   const ctaAnim = useRef(new Animated.Value(0)).current;
+  const dividerAnim = useRef(new Animated.Value(0)).current;
 
   const [counterVal, setCounterVal] = useState(0);
   const counterAnim = useRef(new Animated.Value(0)).current;
@@ -32,31 +35,33 @@ export default function ImpactScreen() {
     });
 
     Animated.sequence([
-      Animated.delay(400),
-      Animated.timing(line1Anim, { toValue: 1, duration: 500, useNativeDriver: Platform.OS !== 'web' }),
-      Animated.delay(200),
+      Animated.delay(300),
+      Animated.timing(line1Anim, { toValue: 1, duration: 450, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.delay(150),
       Animated.parallel([
-        Animated.timing(counterAnim, { toValue: missedPerYear, duration: 1400, useNativeDriver: false }),
-        Animated.timing(line2Anim, { toValue: 1, duration: 500, useNativeDriver: Platform.OS !== 'web' }),
+        Animated.timing(counterAnim, { toValue: missedPerYear, duration: 1200, useNativeDriver: false }),
+        Animated.timing(line2Anim, { toValue: 1, duration: 450, useNativeDriver: Platform.OS !== 'web' }),
       ]),
-      Animated.delay(600),
-      Animated.timing(line3Anim, { toValue: 1, duration: 500, useNativeDriver: Platform.OS !== 'web' }),
-      Animated.delay(600),
-      Animated.timing(line4Anim, { toValue: 1, duration: 500, useNativeDriver: Platform.OS !== 'web' }),
       Animated.delay(400),
-      Animated.timing(ctaAnim, { toValue: 1, duration: 400, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.timing(dividerAnim, { toValue: 1, duration: 300, useNativeDriver: false }),
+      Animated.delay(100),
+      Animated.timing(line3Anim, { toValue: 1, duration: 450, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.delay(400),
+      Animated.timing(line4Anim, { toValue: 1, duration: 450, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.delay(300),
+      Animated.timing(ctaAnim, { toValue: 1, duration: 350, useNativeDriver: Platform.OS !== 'web' }),
     ]).start();
 
     setTimeout(() => {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-    }, 1800);
+    }, 1500);
 
     return () => counterAnim.removeListener(listener);
   }, []);
 
   const fadeSlide = (anim: Animated.Value) => ({
     opacity: anim,
-    transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [16, 0] }) }],
+    transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [12, 0] }) }],
   });
 
   const handleContinue = () => {
@@ -64,30 +69,38 @@ export default function ImpactScreen() {
     router.push('/onboarding/shock' as any);
   };
 
+  const dividerWidth = dividerAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0%', '100%'],
+  });
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.content}>
-        <Animated.Text style={[styles.nameLine, fadeSlide(line1Anim)]}>
-          <Text style={styles.nameText}>{userName || 'friend'}</Text>
-          <Text style={styles.bodyText}>, you'll miss about</Text>
-        </Animated.Text>
+        <View style={styles.textBlock}>
+          <Animated.Text style={[styles.nameLine, fadeSlide(line1Anim)]}>
+            <Text style={styles.nameHighlight}>{userName || 'friend'}</Text>
+            <Text style={styles.headingText}>, you'll miss about</Text>
+          </Animated.Text>
 
-        <Animated.View style={[styles.statRow, fadeSlide(line2Anim)]}>
-          <Text style={styles.bigNumber}>{counterVal} doses</Text>
-          <Text style={styles.bodyText}> this year</Text>
-        </Animated.View>
+          <Animated.View style={[styles.dosesRow, fadeSlide(line2Anim)]}>
+            <Text style={styles.bigNumber}>{counterVal}</Text>
+            <Text style={styles.dosesLabel}> doses</Text>
+            <Text style={styles.headingText}> this year</Text>
+          </Animated.View>
+        </View>
 
-        <Animated.Text style={[styles.statLine, fadeSlide(line3Anim)]}>
-          that's{' '}
-          <Text style={styles.accentOrange}>{weeksLost} weeks</Text>
-          {' '}of lost progress
-        </Animated.Text>
+        <Animated.View style={[styles.divider, { width: dividerWidth }]} />
 
-        <Animated.Text style={[styles.statLine, fadeSlide(line4Anim)]}>
-          or{' '}
-          <Text style={styles.accentOrange}>{monthsLost} months</Text>
-          {' '}your body could've{'\n'}been improving...
-        </Animated.Text>
+        <View style={styles.statsBlock}>
+          <Animated.Text style={[styles.statLine, fadeSlide(line3Anim)]}>
+            that's <Text style={styles.accentBlue}>{weeksLost} weeks</Text> of lost progress
+          </Animated.Text>
+
+          <Animated.Text style={[styles.statLine, fadeSlide(line4Anim)]}>
+            or <Text style={styles.accentBlue}>{monthsLost} months</Text> your body could've{`\n`}been improving...
+          </Animated.Text>
+        </View>
 
         <Animated.Text style={[styles.ghostLine, fadeSlide(ctaAnim)]}>
           what if you never missed again?
@@ -102,7 +115,7 @@ export default function ImpactScreen() {
           testID="impact-continue"
         >
           <Text style={styles.ctaText}>tap to continue</Text>
-          <ArrowRight size={20} color={Colors.blue} strokeWidth={2} />
+          <ArrowRight size={18} color={Colors.blue} strokeWidth={2.5} />
         </TouchableOpacity>
       </Animated.View>
     </View>
@@ -112,56 +125,72 @@ export default function ImpactScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Colors.navy,
   },
   content: {
     flex: 1,
     paddingHorizontal: 28,
     justifyContent: 'center' as const,
-    gap: 20,
+    gap: 24,
+  },
+  textBlock: {
+    gap: 6,
   },
   nameLine: {
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
   },
-  nameText: {
+  nameHighlight: {
     fontFamily: Fonts.heading,
     fontSize: 30,
-    color: Colors.navy,
+    color: Colors.gold,
     lineHeight: 42,
   },
-  bodyText: {
+  headingText: {
     fontFamily: Fonts.heading,
     fontSize: 30,
-    color: Colors.navy,
+    color: Colors.white,
     lineHeight: 42,
   },
-  statRow: {
+  dosesRow: {
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
     alignItems: 'baseline' as const,
   },
   bigNumber: {
     fontFamily: Fonts.heading,
-    fontSize: 30,
-    color: Colors.warning,
-    lineHeight: 42,
+    fontSize: 48,
+    color: Colors.gold,
+    lineHeight: 56,
   },
-  statLine: {
+  dosesLabel: {
     fontFamily: Fonts.heading,
     fontSize: 30,
-    color: Colors.navy,
+    color: Colors.gold,
     lineHeight: 42,
   },
-  accentOrange: {
-    color: Colors.warning,
+  divider: {
+    height: 1,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+  },
+  statsBlock: {
+    gap: 12,
+  },
+  statLine: {
+    fontFamily: Fonts.headingSemiBold,
+    fontSize: 22,
+    color: 'rgba(255,255,255,0.75)',
+    lineHeight: 32,
+  },
+  accentBlue: {
+    color: Colors.blue,
   },
   ghostLine: {
     fontFamily: Fonts.heading,
-    fontSize: 26,
-    color: Colors.mediumGray + '80',
-    lineHeight: 36,
-    marginTop: 8,
+    fontSize: 22,
+    color: 'rgba(255,255,255,0.35)',
+    lineHeight: 32,
+    marginTop: 4,
   },
   footer: {
     paddingHorizontal: 28,
@@ -175,7 +204,7 @@ const styles = StyleSheet.create({
   },
   ctaText: {
     fontFamily: Fonts.body,
-    fontSize: 16,
-    color: Colors.mediumGray,
+    fontSize: 15,
+    color: 'rgba(255,255,255,0.45)',
   },
 });
