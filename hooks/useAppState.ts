@@ -63,6 +63,7 @@ export const [AppStateProvider, useAppState] = createContextHook(() => {
       return DEFAULT_STATE;
     },
     staleTime: Infinity,
+    initialData: DEFAULT_STATE,
   });
 
   const saveMutation = useMutation({
