@@ -47,12 +47,12 @@ export default function NotificationScreen() {
     } else {
       updateState({ notificationsEnabled: true });
     }
-    router.push('/onboarding/reviews' as any);
+    router.push('/onboarding/trajectory' as any);
   }, [updateState, router]);
 
   const handleSkip = useCallback(() => {
     updateState({ notificationsEnabled: false });
-    router.push('/onboarding/reviews' as any);
+    router.push('/onboarding/trajectory' as any);
   }, [updateState, router]);
 
   const bellRotation = bellAnim.interpolate({
