@@ -19,7 +19,7 @@ const HEADING_LINES = [
 
 const BODY_LINES = [
   "you're not alone.",
-  "most people don't feel the difference from their supplements.",
+  "life gets busy, and they slip through the cracks.",
 ];
 
 const LINE_READ_DELAY = 550;
