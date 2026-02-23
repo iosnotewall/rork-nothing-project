@@ -29,7 +29,7 @@ export default function ProductsScreen() {
       ctaEnabled={selected.length > 0}
       onCta={() => {
         updateState({ products: selected });
-        router.push('/onboarding/frequency' as any);
+        router.push('/onboarding/friction' as any);
       }}
     >
       <Text style={styles.headline}>Which supplements do you take?</Text>
