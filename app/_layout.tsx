@@ -7,13 +7,15 @@ import {
 } from '@expo-google-fonts/figtree';
 import { useFonts } from 'expo-font';
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 import { AppStateProvider } from '@/hooks/useAppState';
 
-try {
-  SplashScreen.preventAutoHideAsync();
-} catch (e) {
-  console.log('SplashScreen.preventAutoHideAsync error:', e);
+if (Platform.OS !== 'web') {
+  try {
+    SplashScreen.preventAutoHideAsync();
+  } catch (e) {
+    console.log('SplashScreen.preventAutoHideAsync error:', e);
+  }
 }
 
 const queryClient = new QueryClient();
@@ -70,16 +72,19 @@ export default function RootLayout() {
     Figtree_600SemiBold,
     Figtree_700Bold,
   });
+
   useEffect(() => {
     if (fontsLoaded || fontError) {
       console.log('Fonts ready:', { fontsLoaded, fontError: fontError?.message });
-      SplashScreen.hideAsync().catch((e) => {
-        console.log('SplashScreen.hideAsync error:', e);
-      });
+      if (Platform.OS !== 'web') {
+        SplashScreen.hideAsync().catch((e) => {
+          console.log('SplashScreen.hideAsync error:', e);
+        });
+      }
     }
   }, [fontsLoaded, fontError]);
 
-  const isReady = fontsLoaded || fontError;
+  const isReady = Platform.OS === 'web' || fontsLoaded || fontError;
 
   if (!isReady) {
     return null;
