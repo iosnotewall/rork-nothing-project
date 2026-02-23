@@ -19,7 +19,8 @@ const HEADING_LINES = [
 
 const BODY_LINES = [
   "you're not alone.",
-  "life gets busy, and they slip through the cracks.",
+  "sometimes life gets in the way",
+  "and we just forget to take them.",
 ];
 
 const LINE_READ_DELAY = 550;
