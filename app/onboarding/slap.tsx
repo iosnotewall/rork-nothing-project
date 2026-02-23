@@ -23,9 +23,10 @@ const BODY_LINES = [
 ];
 
 const LINE_READ_DELAY = 550;
-const BODY_START_DELAY = 400;
-const BODY_LINE_DELAY = 450;
+const BODY_START_DELAY = 700;
+const BODY_LINE_DELAY = 650;
 const FADE_DURATION = 350;
+const BODY_FADE_DURATION = 600;
 
 export default function SlapScreen() {
   const router = useRouter();
@@ -54,7 +55,7 @@ export default function SlapScreen() {
 
     const bodySequence = bodyAnims.flatMap((anim, i) => [
       ...(i === 0 ? [Animated.delay(BODY_START_DELAY)] : [Animated.delay(BODY_LINE_DELAY)]),
-      Animated.timing(anim, { toValue: 1, duration: FADE_DURATION, useNativeDriver: Platform.OS !== 'web', easing }),
+      Animated.timing(anim, { toValue: 1, duration: BODY_FADE_DURATION, useNativeDriver: Platform.OS !== 'web', easing }),
     ]);
 
     Animated.sequence([
