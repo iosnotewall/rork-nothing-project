@@ -25,11 +25,11 @@ export default function FrictionScreen() {
 
   const handleContinue = useCallback(() => {
     updateState({ friction: selected });
-    router.push('/onboarding/trajectory' as any);
+    router.push('/onboarding/unlock' as any);
   }, [selected, updateState, router]);
 
   return (
-    <OnboardingScreen step={4} totalSteps={7} ctaText="That's my struggle" ctaEnabled={!!selected} onCta={handleContinue}>
+    <OnboardingScreen step={5} totalSteps={9} ctaText="That's my struggle" ctaEnabled={!!selected} onCta={handleContinue}>
       <Text style={styles.headline}>What gets in the way of taking them?</Text>
 
       <ScrollView showsVerticalScrollIndicator={false}>

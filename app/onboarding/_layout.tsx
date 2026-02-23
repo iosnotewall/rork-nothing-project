@@ -19,7 +19,9 @@ export default function OnboardingLayout() {
       <Stack.Screen name="impact" options={{ animation: 'fade' }} />
       <Stack.Screen name="goal" options={{ animation: 'fade' }} />
       <Stack.Screen name="products" options={{ animation: 'fade' }} />
+      <Stack.Screen name="stack-insight" options={{ animation: 'fade' }} />
       <Stack.Screen name="friction" options={{ animation: 'fade' }} />
+      <Stack.Screen name="unlock" options={{ animation: 'fade' }} />
       <Stack.Screen name="trajectory" options={{ animation: 'fade' }} />
       <Stack.Screen name="loading" options={{ animation: 'fade', gestureEnabled: false }} />
       <Stack.Screen name="paywall" options={{ animation: 'fade' }} />

@@ -34,12 +34,12 @@ export default function ProductsScreen() {
   return (
     <OnboardingScreen
       step={3}
-      totalSteps={7}
+      totalSteps={9}
       ctaText="These are mine"
       ctaEnabled={selected.length > 0}
       onCta={() => {
         updateState({ products: selected });
-        router.push('/onboarding/friction' as any);
+        router.push('/onboarding/stack-insight' as any);
       }}
     >
       <Text style={styles.headline}>Which supplements do you take?</Text>

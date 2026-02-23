@@ -112,7 +112,7 @@ export default function GoalScreen() {
   }
 
   return (
-    <OnboardingScreen step={2} totalSteps={7} ctaText="This is my goal" ctaEnabled={!!selected} onCta={handleContinue}>
+    <OnboardingScreen step={2} totalSteps={9} ctaText="This is my goal" ctaEnabled={!!selected} onCta={handleContinue}>
       <Text style={styles.headline}>What's your main{'\n'}health goal?</Text>
 
       <ScrollView style={styles.scrollArea} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
