@@ -63,11 +63,7 @@ export default function MissedDosesScreen() {
 
     updateState({ missedDoses: option.value });
 
-    if (option.id === 'every-day') {
-      router.push('/onboarding/shock' as any);
-    } else {
-      router.push('/onboarding/impact' as any);
-    }
+    router.push('/onboarding/impact' as any);
   }, [selected, updateState, router]);
 
   return (

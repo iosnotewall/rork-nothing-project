@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, Animated, Platform } from 'react-native';
+import { View, Text, StyleSheet, Animated, Platform, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle } from 'react-native-svg';
@@ -9,10 +9,13 @@ import Colors from '@/constants/colors';
 import { Fonts } from '@/constants/fonts';
 import PrimaryButton from '@/components/PrimaryButton';
 
-const GAUGE_SIZE = 220;
-const STROKE_WIDTH = 14;
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const GAUGE_SIZE = Math.min(SCREEN_WIDTH * 0.56, 240);
+const STROKE_WIDTH = 10;
 const RADIUS = (GAUGE_SIZE - STROKE_WIDTH) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+
+const GAUGE_BG_COLOR = 'rgba(255,255,255,0.08)';
 
 export default function ImpactScreen() {
   const router = useRouter();
@@ -21,20 +24,25 @@ export default function ImpactScreen() {
 
   const daysPerWeek = missedDoses ?? 3;
   const consistencyPct = Math.round((daysPerWeek / 7) * 100);
-  const gap = 100 - consistencyPct;
 
-  const headerAnim = useRef(new Animated.Value(0)).current;
-  const gaugeAnim = useRef(new Animated.Value(0)).current;
+  const sceneAnim = useRef(new Animated.Value(0)).current;
   const pctAnim = useRef(new Animated.Value(0)).current;
+  const gaugeAnim = useRef(new Animated.Value(0)).current;
   const labelAnim = useRef(new Animated.Value(0)).current;
-  const insightAnim = useRef(new Animated.Value(0)).current;
-  const hookAnim = useRef(new Animated.Value(0)).current;
+  const punchAnim = useRef(new Animated.Value(0)).current;
+  const moneyAnim = useRef(new Animated.Value(0)).current;
   const btnAnim = useRef(new Animated.Value(0)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const shakeAnim = useRef(new Animated.Value(0)).current;
 
   const [displayPct, setDisplayPct] = useState(0);
   const [strokeDashoffset, setStrokeDashoffset] = useState(CIRCUMFERENCE);
 
+  const gaugeColor = consistencyPct >= 70 ? '#3AAF6C' : consistencyPct >= 45 ? '#E8A838' : '#FF4D4D';
+
   useEffect(() => {
+    const useNative = Platform.OS !== 'web';
+
     const pctListener = pctAnim.addListener(({ value }) => {
       setDisplayPct(Math.round(value));
     });
@@ -45,25 +53,41 @@ export default function ImpactScreen() {
     });
 
     Animated.sequence([
-      Animated.delay(300),
-      Animated.timing(headerAnim, { toValue: 1, duration: 500, useNativeDriver: Platform.OS !== 'web' }),
-      Animated.delay(400),
+      Animated.delay(200),
+      Animated.timing(sceneAnim, { toValue: 1, duration: 600, useNativeDriver: useNative }),
+      Animated.delay(500),
       Animated.parallel([
-        Animated.timing(gaugeAnim, { toValue: consistencyPct / 100, duration: 1400, useNativeDriver: false }),
-        Animated.timing(pctAnim, { toValue: consistencyPct, duration: 1400, useNativeDriver: false }),
+        Animated.timing(gaugeAnim, { toValue: consistencyPct / 100, duration: 1800, useNativeDriver: false }),
+        Animated.timing(pctAnim, { toValue: consistencyPct, duration: 1800, useNativeDriver: false }),
       ]),
-      Animated.timing(labelAnim, { toValue: 1, duration: 400, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.parallel([
+        Animated.timing(labelAnim, { toValue: 1, duration: 400, useNativeDriver: useNative }),
+        Animated.sequence([
+          Animated.timing(shakeAnim, { toValue: 8, duration: 60, useNativeDriver: useNative }),
+          Animated.timing(shakeAnim, { toValue: -8, duration: 60, useNativeDriver: useNative }),
+          Animated.timing(shakeAnim, { toValue: 5, duration: 50, useNativeDriver: useNative }),
+          Animated.timing(shakeAnim, { toValue: -5, duration: 50, useNativeDriver: useNative }),
+          Animated.timing(shakeAnim, { toValue: 0, duration: 40, useNativeDriver: useNative }),
+        ]),
+      ]),
+      Animated.delay(500),
+      Animated.timing(punchAnim, { toValue: 1, duration: 500, useNativeDriver: useNative }),
       Animated.delay(300),
-      Animated.timing(insightAnim, { toValue: 1, duration: 500, useNativeDriver: Platform.OS !== 'web' }),
-      Animated.delay(200),
-      Animated.timing(hookAnim, { toValue: 1, duration: 500, useNativeDriver: Platform.OS !== 'web' }),
-      Animated.delay(200),
-      Animated.timing(btnAnim, { toValue: 1, duration: 400, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.timing(moneyAnim, { toValue: 1, duration: 500, useNativeDriver: useNative }),
+      Animated.delay(300),
+      Animated.timing(btnAnim, { toValue: 1, duration: 400, useNativeDriver: useNative }),
     ]).start();
 
     setTimeout(() => {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-    }, 1800);
+    }, 2600);
+
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, { toValue: 1.04, duration: 1500, useNativeDriver: useNative }),
+        Animated.timing(pulseAnim, { toValue: 1, duration: 1500, useNativeDriver: useNative }),
+      ])
+    ).start();
 
     return () => {
       pctAnim.removeListener(pctListener);
@@ -71,36 +95,34 @@ export default function ImpactScreen() {
     };
   }, []);
 
-  const fadeSlide = (anim: Animated.Value) => ({
+  const fadeSlide = (anim: Animated.Value, dist = 18) => ({
     opacity: anim,
-    transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [16, 0] }) }],
+    transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [dist, 0] }) }],
   });
 
   const handleContinue = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.push('/onboarding/shock' as any);
+    router.push('/onboarding/trajectory' as any);
   }, [router]);
 
-  const gaugeColor = consistencyPct >= 80 ? '#3AAF6C' : consistencyPct >= 50 ? '#E8A838' : Colors.warning;
-
   return (
-    <View style={[styles.container, { paddingTop: insets.top + 16 }]}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.content}>
-        <Animated.View style={fadeSlide(headerAnim)}>
-          <Text style={styles.eyebrow}>your reality check</Text>
+        <Animated.View style={[styles.topSection, fadeSlide(sceneAnim)]}>
+          <Text style={styles.eyebrow}>YOUR REALITY CHECK</Text>
           <Text style={styles.headline}>
-            {userName ? `${userName}, your` : 'Your'} supplements are only working at
+            {userName || 'Your'} supplements{'\n'}are only working at
           </Text>
         </Animated.View>
 
-        <View style={styles.gaugeSection}>
+        <Animated.View style={[styles.gaugeSection, { transform: [{ scale: pulseAnim }, { translateX: shakeAnim }] }]}>
           <View style={styles.gaugeContainer}>
             <Svg width={GAUGE_SIZE} height={GAUGE_SIZE} style={styles.gaugeSvg}>
               <Circle
                 cx={GAUGE_SIZE / 2}
                 cy={GAUGE_SIZE / 2}
                 r={RADIUS}
-                stroke={Colors.lightGray}
+                stroke={GAUGE_BG_COLOR}
                 strokeWidth={STROKE_WIDTH}
                 fill="none"
               />
@@ -120,38 +142,32 @@ export default function ImpactScreen() {
             </Svg>
             <View style={styles.gaugeCenter}>
               <Text style={[styles.pctNumber, { color: gaugeColor }]}>{displayPct}%</Text>
-              <Animated.Text style={[styles.pctLabel, fadeSlide(labelAnim)]}>
-                consistency
+              <Animated.Text style={[styles.pctLabel, { opacity: labelAnim }]}>
+                effectiveness
               </Animated.Text>
             </View>
           </View>
-        </View>
-
-        <Animated.View style={[styles.insightCard, fadeSlide(insightAnim)]}>
-          <View style={[styles.insightAccent, { backgroundColor: gaugeColor }]} />
-          <View style={styles.insightContent}>
-            <Text style={styles.insightTitle}>Here's the problem</Text>
-            <Text style={styles.insightBody}>
-              At {consistencyPct}% consistency, your body never builds up enough of what it needs.{' '}
-              <Text style={styles.insightBold}>
-                You're paying for 100% but only getting {consistencyPct}% of the results.
-              </Text>
-            </Text>
-            {gap > 20 && (
-              <Text style={styles.insightDetail}>
-                Research shows supplements need 90%+ consistency to deliver real, noticeable results.
-              </Text>
-            )}
-          </View>
         </Animated.View>
 
-        <Animated.View style={[styles.hookWrap, fadeSlide(hookAnim)]}>
-          <Text style={styles.hookText}>What if you never missed again?</Text>
+        <Animated.View style={[styles.punchSection, fadeSlide(punchAnim)]}>
+          <Text style={styles.punchLine}>
+            You're paying for 100%.{'\n'}
+            <Text style={[styles.punchHighlight, { color: gaugeColor }]}>
+              You're only getting {consistencyPct}%.
+            </Text>
+          </Text>
+        </Animated.View>
+
+        <Animated.View style={[styles.moneySection, fadeSlide(moneyAnim)]}>
+          <View style={[styles.moneyDot, { backgroundColor: gaugeColor }]} />
+          <Text style={styles.moneyText}>
+            That's {100 - consistencyPct}% of your investment wasted — every single month.
+          </Text>
         </Animated.View>
       </View>
 
       <Animated.View style={[styles.footer, { opacity: btnAnim, paddingBottom: Math.max(insets.bottom, 20) }]}>
-        <PrimaryButton title="Show me how" onPress={handleContinue} />
+        <PrimaryButton title="What can I do?" onPress={handleContinue} variant="white" />
       </Animated.View>
     </View>
   );
@@ -160,31 +176,33 @@ export default function ImpactScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7F9FC',
+    backgroundColor: '#0B1A2E',
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: 28,
+    justifyContent: 'center' as const,
+  },
+  topSection: {
+    marginBottom: 36,
   },
   eyebrow: {
-    fontFamily: Fonts.body,
-    fontSize: 12,
-    color: Colors.mediumGray,
-    textTransform: 'uppercase' as const,
-    letterSpacing: 1.8,
-    marginBottom: 10,
-    marginTop: 12,
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 11,
+    color: 'rgba(255,255,255,0.35)',
+    letterSpacing: 2.5,
+    marginBottom: 12,
   },
   headline: {
     fontFamily: Fonts.heading,
-    fontSize: 24,
-    color: Colors.navy,
-    lineHeight: 32,
+    fontSize: 28,
+    color: Colors.white,
+    lineHeight: 36,
+    letterSpacing: -0.3,
   },
   gaugeSection: {
     alignItems: 'center' as const,
-    marginTop: 32,
-    marginBottom: 28,
+    marginBottom: 40,
   },
   gaugeContainer: {
     width: GAUGE_SIZE,
@@ -200,68 +218,54 @@ const styles = StyleSheet.create({
   },
   pctNumber: {
     fontFamily: Fonts.heading,
-    fontSize: 56,
+    fontSize: 52,
     letterSpacing: -2,
-    lineHeight: 62,
+    lineHeight: 58,
   },
   pctLabel: {
     fontFamily: Fonts.bodyMedium,
-    fontSize: 14,
-    color: Colors.mediumGray,
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.4)',
     marginTop: 2,
   },
-  insightCard: {
-    flexDirection: 'row' as const,
-    backgroundColor: Colors.white,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    overflow: 'hidden' as const,
-    marginBottom: 24,
-  },
-  insightAccent: {
-    width: 4,
-  },
-  insightContent: {
-    flex: 1,
-    paddingVertical: 18,
-    paddingHorizontal: 18,
-    gap: 8,
-  },
-  insightTitle: {
-    fontFamily: Fonts.headingSemiBold,
-    fontSize: 16,
-    color: Colors.navy,
-  },
-  insightBody: {
-    fontFamily: Fonts.body,
-    fontSize: 14,
-    color: Colors.darkGray,
-    lineHeight: 21,
-  },
-  insightBold: {
-    fontFamily: Fonts.headingSemiBold,
-    fontSize: 14,
-    color: Colors.navy,
-  },
-  insightDetail: {
-    fontFamily: Fonts.body,
-    fontSize: 13,
-    color: Colors.mediumGray,
-    lineHeight: 19,
-    fontStyle: 'italic' as const,
-  },
-  hookWrap: {
+  punchSection: {
+    marginBottom: 20,
     paddingHorizontal: 4,
   },
-  hookText: {
+  punchLine: {
     fontFamily: Fonts.heading,
     fontSize: 20,
-    color: Colors.blue,
+    color: 'rgba(255,255,255,0.75)',
+    lineHeight: 30,
     textAlign: 'center' as const,
   },
+  punchHighlight: {
+    fontFamily: Fonts.heading,
+    fontSize: 20,
+  },
+  moneySection: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 12,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+  },
+  moneyDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  moneyText: {
+    fontFamily: Fonts.body,
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.55)',
+    lineHeight: 20,
+    flex: 1,
+  },
   footer: {
-    paddingHorizontal: 20,
-    paddingTop: 12,
+    paddingHorizontal: 24,
+    paddingTop: 16,
   },
 });

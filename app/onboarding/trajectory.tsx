@@ -6,6 +6,7 @@ import Svg, { Path, Circle, Defs, RadialGradient, Stop, Rect } from 'react-nativ
 import Colors from '@/constants/colors';
 import { Fonts } from '@/constants/fonts';
 import PrimaryButton from '@/components/PrimaryButton';
+import { useAppState } from '@/hooks/useAppState';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const GRAPH_HORIZONTAL_PADDING = 24;
@@ -66,6 +67,10 @@ function getPathLength(pathData: string): number {
 export default function TrajectoryScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { missedDoses } = useAppState();
+
+  const daysPerWeek = missedDoses ?? 3;
+  const consistencyPct = Math.round((daysPerWeek / 7) * 100);
 
   const titleAnim = useRef(new Animated.Value(0)).current;
   const subtitleAnim = useRef(new Animated.Value(0)).current;
@@ -151,9 +156,9 @@ export default function TrajectoryScreen() {
 
           <Animated.View style={[styles.subtitleRow, fadeSlide(subtitleAnim)]}>
             <Text style={styles.subtitle}>
-              Breaking free from{' '}
+              What happens when you{' '}
             </Text>
-            <Text style={styles.subtitleAccent}>missed doses</Text>
+            <Text style={styles.subtitleAccent}>never miss again</Text>
           </Animated.View>
         </View>
 
@@ -211,12 +216,12 @@ export default function TrajectoryScreen() {
 
               <Animated.View style={[styles.labelUp, { opacity: labelsAnim }]}>
                 <View style={[styles.labelDot, { backgroundColor: ACCENT_COLOR }]} />
-                <Text style={[styles.labelText, { color: ACCENT_COLOR }]}>Consistency</Text>
+                <Text style={[styles.labelText, { color: ACCENT_COLOR }]}>With Volera</Text>
               </Animated.View>
 
               <Animated.View style={[styles.labelDown, { opacity: labelsAnim }]}>
                 <View style={[styles.labelDot, { backgroundColor: RED_COLOR }]} />
-                <Text style={[styles.labelText, { color: RED_COLOR }]}>Missing Doses</Text>
+                <Text style={[styles.labelText, { color: RED_COLOR }]}>Without ({consistencyPct}%)</Text>
               </Animated.View>
             </View>
 
@@ -229,15 +234,15 @@ export default function TrajectoryScreen() {
         </Animated.View>
 
         <Animated.View style={[styles.bottomSection, fadeSlide(bottomAnim)]}>
-          <Text style={styles.bottomTitle}>Build consistency.</Text>
+          <Text style={styles.bottomTitle}>Consistency changes everything.</Text>
           <Text style={styles.bottomBody}>
-            IVB helps you build habits that last, replacing willpower with a system that actually works.
+            Volera turns missed doses into daily wins — so your supplements finally deliver what you paid for.
           </Text>
         </Animated.View>
       </View>
 
       <Animated.View style={[styles.footer, { opacity: btnAnim, paddingBottom: Math.max(insets.bottom, 20) }]}>
-        <PrimaryButton title="Build My Plan" onPress={() => router.push('/onboarding/reviews' as any)} variant="white" />
+        <PrimaryButton title="Let's build my plan" onPress={() => router.push('/onboarding/goal' as any)} variant="white" />
       </Animated.View>
     </View>
   );
