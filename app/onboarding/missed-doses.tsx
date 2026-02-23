@@ -9,30 +9,30 @@ import { Fonts } from '@/constants/fonts';
 
 const OPTIONS = [
   {
-    id: 'rarely',
-    label: 'Rarely',
-    desc: 'Once a week, maybe less',
+    id: 'one-two',
+    label: '1–2 days a week',
+    desc: 'I forget more than I remember',
     emoji: '😬',
-    value: 1,
+    value: 2,
   },
   {
-    id: 'hit-or-miss',
-    label: 'Hit or miss',
-    desc: 'Some weeks yes, some no',
+    id: 'three-four',
+    label: '3–4 days a week',
+    desc: 'I try but life gets in the way',
     emoji: '🎲',
-    value: 3,
+    value: 4,
   },
   {
-    id: 'almost-always',
-    label: 'Almost always',
-    desc: 'I miss the occasional day',
+    id: 'five-six',
+    label: '5–6 days a week',
+    desc: 'Pretty good, just slip sometimes',
     emoji: '💪',
     value: 6,
   },
   {
-    id: 'never-miss',
-    label: 'Never miss',
-    desc: "Locked into my routine",
+    id: 'every-day',
+    label: 'Every single day',
+    desc: 'Locked in, never miss',
     emoji: '🔥',
     value: 7,
   },
@@ -63,7 +63,7 @@ export default function MissedDosesScreen() {
 
     updateState({ missedDoses: option.value });
 
-    if (option.id === 'never-miss') {
+    if (option.id === 'every-day') {
       router.push('/onboarding/shock' as any);
     } else {
       router.push('/onboarding/impact' as any);
