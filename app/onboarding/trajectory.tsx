@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, Animated, Platform, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Path, Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
+import Svg, { Path, Circle, Defs, LinearGradient, Stop, Filter, FeGaussianBlur } from 'react-native-svg';
 import Colors from '@/constants/colors';
 import { Fonts } from '@/constants/fonts';
 import PrimaryButton from '@/components/PrimaryButton';
@@ -207,6 +207,25 @@ export default function TrajectoryScreen() {
                   </LinearGradient>
                 </Defs>
 
+                {/* Red glow layers */}
+                <Path
+                  d={downPath}
+                  stroke={RED_COLOR}
+                  strokeWidth={12}
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeDasharray={`${downDash.length}, ${downLength}`}
+                  opacity={0.08}
+                />
+                <Path
+                  d={downPath}
+                  stroke={RED_COLOR}
+                  strokeWidth={7}
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeDasharray={`${downDash.length}, ${downLength}`}
+                  opacity={0.15}
+                />
                 <Path
                   d={downPath}
                   stroke={RED_COLOR}
@@ -214,9 +233,28 @@ export default function TrajectoryScreen() {
                   fill="none"
                   strokeLinecap="round"
                   strokeDasharray={`${downDash.length}, ${downLength}`}
-                  opacity={0.7}
+                  opacity={0.9}
                 />
 
+                {/* Blue glow layers */}
+                <Path
+                  d={upPath}
+                  stroke={ACCENT_COLOR}
+                  strokeWidth={14}
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeDasharray={`${upDash.length}, ${upLength}`}
+                  opacity={0.08}
+                />
+                <Path
+                  d={upPath}
+                  stroke={ACCENT_COLOR}
+                  strokeWidth={8}
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeDasharray={`${upDash.length}, ${upLength}`}
+                  opacity={0.18}
+                />
                 <Path
                   d={upPath}
                   stroke="url(#blueGrad)"
@@ -227,12 +265,28 @@ export default function TrajectoryScreen() {
                 />
 
                 {upDash.length > upLength * 0.95 && (
-                  <Circle
-                    cx={endPointUp.x}
-                    cy={endPointUp.y}
-                    r={5}
-                    fill={ACCENT_COLOR}
-                  />
+                  <>
+                    <Circle
+                      cx={endPointUp.x}
+                      cy={endPointUp.y}
+                      r={10}
+                      fill={ACCENT_COLOR}
+                      opacity={0.2}
+                    />
+                    <Circle
+                      cx={endPointUp.x}
+                      cy={endPointUp.y}
+                      r={6}
+                      fill={ACCENT_COLOR}
+                      opacity={0.4}
+                    />
+                    <Circle
+                      cx={endPointUp.x}
+                      cy={endPointUp.y}
+                      r={4}
+                      fill={ACCENT_COLOR}
+                    />
+                  </>
                 )}
               </Svg>
 
@@ -327,7 +381,9 @@ const styles = StyleSheet.create({
     right: 55,
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    backgroundColor: 'rgba(74,144,217,0.15)',
+    backgroundColor: 'rgba(74,144,217,0.18)',
+    borderWidth: 1,
+    borderColor: 'rgba(74,144,217,0.3)',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
@@ -335,11 +391,13 @@ const styles = StyleSheet.create({
   },
   labelDown: {
     position: 'absolute' as const,
-    top: 72,
+    top: 92,
     right: 15,
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    backgroundColor: 'rgba(255,59,59,0.12)',
+    backgroundColor: 'rgba(255,59,59,0.16)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,59,59,0.3)',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
