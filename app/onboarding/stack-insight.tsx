@@ -76,7 +76,7 @@ export default function StackInsightScreen() {
         <Animated.View style={[styles.topSection, fadeSlide(fadeIn)]}>
           <Text style={styles.eyebrow}>YOUR STACK</Text>
           <Text style={styles.headline}>
-            {userName ? `${userName}, you` : 'You'}'ve built a{'\n'}serious routine.
+            {userName ? `${userName}, you` : 'You'}'ve built{'\n'}a serious routine.
           </Text>
         </Animated.View>
 
