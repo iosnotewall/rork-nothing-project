@@ -1,12 +1,14 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform, Modal } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform, Modal, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { X, AlertCircle } from 'lucide-react-native';
+import { X, ChevronRight } from 'lucide-react-native';
 import OnboardingScreen from '@/components/OnboardingScreen';
 import { useAppState } from '@/hooks/useAppState';
 import Colors from '@/constants/colors';
 import { Fonts } from '@/constants/fonts';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const OPTIONS = [
   {
@@ -109,38 +111,40 @@ export default function MissedDosesScreen() {
       </View>
 
       <Modal visible={showHonestyModal} transparent animationType="none" statusBarTranslucent>
-        <View style={styles.modalOverlay}>
-          <Animated.View style={[styles.modalCard, { opacity: modalAnim, transform: [{ scale: modalAnim.interpolate({ inputRange: [0, 1], outputRange: [0.92, 1] }) }] }]}>
-            <TouchableOpacity style={styles.modalClose} onPress={() => { setShowHonestyModal(false); }} activeOpacity={0.7}>
-              <X size={20} color={Colors.mediumGray} strokeWidth={2} />
-            </TouchableOpacity>
+        <Animated.View style={[styles.modalOverlay, { opacity: modalAnim }]}>
+          <TouchableOpacity style={styles.modalOverlayTouch} activeOpacity={1} onPress={() => setShowHonestyModal(false)} />
+          <Animated.View style={[styles.modalSheet, { transform: [{ translateY: modalAnim.interpolate({ inputRange: [0, 1], outputRange: [300, 0] }) }] }]}>
+            <View style={styles.sheetHandle} />
 
-            <View style={styles.modalIconWrap}>
-              <AlertCircle size={28} color={Colors.blue} strokeWidth={1.8} />
+            <View style={styles.sheetHeader}>
+              <Text style={styles.sheetTitle}>Be honest with yourself</Text>
+              <TouchableOpacity style={styles.sheetClose} onPress={() => setShowHonestyModal(false)} activeOpacity={0.7}>
+                <X size={18} color={Colors.mediumGray} strokeWidth={2.5} />
+              </TouchableOpacity>
             </View>
 
-            <Text style={styles.modalTitle}>Be honest with yourself</Text>
-            <Text style={styles.modalBody}>
+            <Text style={styles.sheetBody}>
               Most people overestimate their consistency. Even forgetting once a week means your supplements aren't building up properly in your system.
             </Text>
-            <Text style={styles.modalPrompt}>How often do you really take them?</Text>
 
-            <View style={styles.modalOptions}>
-              <TouchableOpacity style={styles.modalOption} onPress={() => closeModal('five-six')} activeOpacity={0.7}>
-                <TrendingUp size={18} color={Colors.navy} strokeWidth={2} />
-                <Text style={styles.modalOptionText}>Almost every day, maybe miss one</Text>
+            <Text style={styles.sheetPrompt}>How often do you really take them?</Text>
+
+            <View style={styles.sheetOptions}>
+              <TouchableOpacity style={styles.sheetOption} onPress={() => closeModal('five-six')} activeOpacity={0.6}>
+                <Text style={styles.sheetOptionText}>Almost every day, maybe miss one</Text>
+                <ChevronRight size={16} color={Colors.mediumGray} strokeWidth={2} />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.modalOption} onPress={() => closeModal('three-four')} activeOpacity={0.7}>
-                <Shuffle size={18} color={Colors.navy} strokeWidth={2} />
-                <Text style={styles.modalOptionText}>I skip a couple days a week</Text>
+              <TouchableOpacity style={styles.sheetOption} onPress={() => closeModal('three-four')} activeOpacity={0.6}>
+                <Text style={styles.sheetOptionText}>I skip a couple days a week</Text>
+                <ChevronRight size={16} color={Colors.mediumGray} strokeWidth={2} />
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.modalOption, styles.modalOptionLast]} onPress={() => closeModal('every-day')} activeOpacity={0.7}>
-                <CheckCircle size={18} color={Colors.navy} strokeWidth={2} />
-                <Text style={styles.modalOptionText}>Truly every single day</Text>
+              <TouchableOpacity style={[styles.sheetOption, styles.sheetOptionLast]} onPress={() => closeModal('every-day')} activeOpacity={0.6}>
+                <Text style={styles.sheetOptionText}>Truly every single day</Text>
+                <ChevronRight size={16} color={Colors.mediumGray} strokeWidth={2} />
               </TouchableOpacity>
             </View>
           </Animated.View>
-        </View>
+        </Animated.View>
       </Modal>
     </OnboardingScreen>
   );
@@ -179,7 +183,6 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     backgroundColor: Colors.softBlue,
   },
-
   optionLabel: {
     fontFamily: Fonts.bodySemiBold,
     fontSize: 16,
@@ -190,76 +193,83 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.45)',
-    justifyContent: 'center' as const,
-    alignItems: 'center' as const,
-    paddingHorizontal: 28,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'flex-end' as const,
   },
-  modalCard: {
-    backgroundColor: Colors.white,
-    borderRadius: 24,
-    paddingTop: 28,
-    paddingBottom: 24,
+  modalOverlayTouch: {
+    flex: 1,
+  },
+  modalSheet: {
+    backgroundColor: Colors.cream,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingTop: 8,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 28,
     paddingHorizontal: 24,
-    width: '100%' as const,
-    maxWidth: 380,
+    maxWidth: SCREEN_WIDTH,
   },
-  modalClose: {
-    position: 'absolute' as const,
-    top: 16,
-    right: 16,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#F0EEED',
+  sheetHandle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: Colors.border,
+    alignSelf: 'center' as const,
+    marginBottom: 20,
+  },
+  sheetHeader: {
+    flexDirection: 'row' as const,
+    justifyContent: 'space-between' as const,
     alignItems: 'center' as const,
-    justifyContent: 'center' as const,
+    marginBottom: 12,
   },
-  modalIconWrap: {
-    width: 52,
-    height: 52,
-    borderRadius: 16,
-    backgroundColor: Colors.softBlue,
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-    marginBottom: 18,
-  },
-  modalTitle: {
+  sheetTitle: {
     fontFamily: Fonts.heading,
-    fontSize: 22,
+    fontSize: 20,
     color: Colors.navy,
-    marginBottom: 10,
+    flex: 1,
   },
-  modalBody: {
+  sheetClose: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: Colors.lightGray,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    marginLeft: 12,
+  },
+  sheetBody: {
     fontFamily: Fonts.body,
     fontSize: 15,
     color: Colors.darkGray,
     lineHeight: 22,
-    marginBottom: 18,
+    marginBottom: 22,
   },
-  modalPrompt: {
+  sheetPrompt: {
     fontFamily: Fonts.bodySemiBold,
-    fontSize: 14,
+    fontSize: 12,
     color: Colors.mediumGray,
     textTransform: 'uppercase' as const,
-    letterSpacing: 0.8,
-    marginBottom: 14,
+    letterSpacing: 1,
+    marginBottom: 10,
   },
-  modalOptions: {
-    gap: 0,
+  sheetOptions: {
+    backgroundColor: Colors.white,
+    borderRadius: 14,
+    overflow: 'hidden' as const,
   },
-  modalOption: {
+  sheetOption: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    gap: 14,
-    paddingVertical: 15,
-    borderBottomWidth: 1,
+    justifyContent: 'space-between' as const,
+    paddingVertical: 16,
+    paddingHorizontal: 18,
+    borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: Colors.border,
   },
-  modalOptionLast: {
+  sheetOptionLast: {
     borderBottomWidth: 0,
   },
-  modalOptionText: {
+  sheetOptionText: {
     fontFamily: Fonts.bodySemiBold,
     fontSize: 15,
     color: Colors.navy,
