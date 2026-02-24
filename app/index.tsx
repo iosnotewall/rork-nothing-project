@@ -16,11 +16,11 @@ export default function IndexScreen() {
 
   if (onboardingComplete) {
     console.log('Index: Redirecting to tabs');
-    return <Redirect href="/(tabs)/today" />;
+    return <Redirect href={"/(tabs)/today" as any} />;
   }
 
   console.log('Index: Redirecting to onboarding');
-  return <Redirect href="/onboarding/welcome" />;
+  return <Redirect href={"/onboarding/welcome" as any} />;
 }
 
 const styles = StyleSheet.create({
