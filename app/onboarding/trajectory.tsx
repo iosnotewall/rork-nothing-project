@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
   labelUp: {
     position: 'absolute' as const,
     top: 10,
-    right: 62,
+    right: 72,
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
     backgroundColor: 'rgba(74,144,217,0.18)',
@@ -391,7 +391,7 @@ const styles = StyleSheet.create({
   },
   labelDown: {
     position: 'absolute' as const,
-    top: 100,
+    top: 116,
     right: 15,
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
