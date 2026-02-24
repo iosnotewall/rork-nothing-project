@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, Animated, Pressable, Easing, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -36,6 +36,8 @@ export default function BridgeScreen() {
   const headingAnims = useRef(HEADING_LINES.map(() => new Animated.Value(0))).current;
   const bodyAnims = useRef(BODY_LINES.map(() => new Animated.Value(0))).current;
   const footerAnim = useRef(new Animated.Value(0)).current;
+  const underlineAnim = useRef(new Animated.Value(0)).current;
+  const [veloraWidth, setVeloraWidth] = useState<number>(0);
 
   const advance = () => {
     if (advancedRef.current) return;
@@ -61,6 +63,8 @@ export default function BridgeScreen() {
       ...headingSequence,
       ...bodySequence,
       Animated.delay(250),
+      Animated.timing(underlineAnim, { toValue: 1, duration: 500, useNativeDriver: false, easing: Easing.out(Easing.quad) }),
+      Animated.delay(100),
       Animated.timing(footerAnim, { toValue: 1, duration: 350, useNativeDriver: Platform.OS !== 'web', easing }),
     ]).start();
   }, []);
@@ -82,16 +86,41 @@ export default function BridgeScreen() {
         <View style={styles.content}>
           <View style={styles.headingBlock}>
             {HEADING_LINES.map((line, i) => (
-              <Animated.Text
-                key={i}
-                style={[
-                  styles.heading,
-                  line.highlight && styles.headingHighlight,
-                  fadeSlide(headingAnims[i]),
-                ]}
-              >
-                {line.text}
-              </Animated.Text>
+              <Animated.View key={i} style={fadeSlide(headingAnims[i])}>
+                {i === 0 ? (
+                  <View style={styles.headingRow}>
+                    <View>
+                      <Text
+                        style={styles.heading}
+                        onLayout={(e) => setVeloraWidth(e.nativeEvent.layout.width)}
+                      >
+                        Velora
+                      </Text>
+                      <Animated.View
+                        style={[
+                          styles.underline,
+                          {
+                            width: underlineAnim.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [0, veloraWidth || 100],
+                            }),
+                          },
+                        ]}
+                      />
+                    </View>
+                    <Text style={styles.heading}> makes your</Text>
+                  </View>
+                ) : (
+                  <Text
+                    style={[
+                      styles.heading,
+                      line.highlight && styles.headingHighlight,
+                    ]}
+                  >
+                    {line.text}
+                  </Text>
+                )}
+              </Animated.View>
             ))}
           </View>
 
@@ -126,6 +155,17 @@ const styles = StyleSheet.create({
   },
   headingBlock: {
     gap: 2,
+  },
+  headingRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'baseline' as const,
+    flexWrap: 'wrap' as const,
+  },
+  underline: {
+    height: 3,
+    backgroundColor: ACCENT,
+    borderRadius: 2,
+    marginTop: 2,
   },
   heading: {
     fontFamily: Fonts.heading,
