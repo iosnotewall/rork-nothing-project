@@ -84,7 +84,7 @@ export default function RootLayout() {
     }
   }, [fontsLoaded, fontError]);
 
-  const isReady = Platform.OS === 'web' || fontsLoaded || fontError;
+  const isReady = Platform.OS === 'web' || !!fontsLoaded || !!fontError;
 
   if (!isReady) {
     return null;
