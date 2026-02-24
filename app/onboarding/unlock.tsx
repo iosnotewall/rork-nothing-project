@@ -1,10 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Animated, Platform, Dimensions } from 'react-native';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { View, Text, StyleSheet, Animated, Platform, Dimensions, LayoutChangeEvent } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
+import { Shield, Zap } from 'lucide-react-native';
 import { useAppState } from '@/hooks/useAppState';
-import Colors from '@/constants/colors';
 import { Fonts } from '@/constants/fonts';
 import { FRICTION_OPTIONS } from '@/constants/content';
 import PrimaryButton from '@/components/PrimaryButton';
@@ -62,9 +62,17 @@ export default function UnlockScreen() {
   const barAnim = useRef(new Animated.Value(0)).current;
   const resultAnim = useRef(new Animated.Value(0)).current;
   const btnAnim = useRef(new Animated.Value(0)).current;
-  const glowAnim = useRef(new Animated.Value(0.3)).current;
+  const pulseAnim = useRef(new Animated.Value(0)).current;
+  const shimmerAnim = useRef(new Animated.Value(0)).current;
 
-  const [barWidth, setBarWidth] = useState(0);
+  const [trackWidth, setTrackWidth] = useState<number>(SCREEN_WIDTH - 80);
+
+  const onTrackLayout = useCallback((e: LayoutChangeEvent) => {
+    const w = e.nativeEvent.layout.width;
+    if (w > 0) {
+      setTrackWidth(w);
+    }
+  }, []);
 
   useEffect(() => {
     const useNative = Platform.OS !== 'web';
@@ -79,7 +87,7 @@ export default function UnlockScreen() {
       Animated.delay(200),
       Animated.timing(flipAnim, { toValue: 1, duration: 700, useNativeDriver: useNative }),
       Animated.delay(400),
-      Animated.timing(barAnim, { toValue: 1, duration: 1200, useNativeDriver: false }),
+      Animated.timing(barAnim, { toValue: 1, duration: 1400, useNativeDriver: false }),
       Animated.delay(200),
       Animated.timing(resultAnim, { toValue: 1, duration: 500, useNativeDriver: useNative }),
       Animated.delay(300),
@@ -92,9 +100,13 @@ export default function UnlockScreen() {
 
     Animated.loop(
       Animated.sequence([
-        Animated.timing(glowAnim, { toValue: 0.7, duration: 1500, useNativeDriver: useNative }),
-        Animated.timing(glowAnim, { toValue: 0.3, duration: 1500, useNativeDriver: useNative }),
+        Animated.timing(pulseAnim, { toValue: 1, duration: 2000, useNativeDriver: useNative }),
+        Animated.timing(pulseAnim, { toValue: 0, duration: 2000, useNativeDriver: useNative }),
       ])
+    ).start();
+
+    Animated.loop(
+      Animated.timing(shimmerAnim, { toValue: 1, duration: 2500, useNativeDriver: false }),
     ).start();
   }, []);
 
@@ -105,23 +117,32 @@ export default function UnlockScreen() {
 
   const currentBarWidth = barAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, (SCREEN_WIDTH - 80) * (consistencyPct / 100)],
+    outputRange: [0, trackWidth * (consistencyPct / 100)],
   });
 
   const fullBarWidth = barAnim.interpolate({
-    inputRange: [0, 0.7, 1],
-    outputRange: [0, 0, SCREEN_WIDTH - 80],
+    inputRange: [0, 0.5, 1],
+    outputRange: [0, 0, trackWidth],
+  });
+
+  const shimmerLeft = shimmerAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-60, trackWidth + 60],
   });
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
+      <View style={styles.bgGlow} />
+
       <View style={styles.content}>
         <Animated.View style={[styles.problemSection, fadeSlide(problemAnim)]}>
           <Text style={styles.problemText}>{reframe.problem}</Text>
         </Animated.View>
 
         <Animated.View style={[styles.statCard, fadeSlide(statAnim)]}>
-          <View style={styles.statDot} />
+          <View style={styles.statIconWrap}>
+            <Shield size={14} color="#FF6B6B" strokeWidth={2.5} />
+          </View>
           <Text style={styles.statText}>{reframe.stat}</Text>
         </Animated.View>
 
@@ -133,9 +154,11 @@ export default function UnlockScreen() {
 
         <View style={styles.barSection}>
           <Animated.View style={{ opacity: barAnim }}>
-            <Text style={styles.barLabel}>Your consistency today</Text>
-            <View style={styles.barTrack}>
-              <Animated.View style={[styles.barFillCurrent, { width: currentBarWidth }]} />
+            <Text style={styles.barLabel}>YOUR CONSISTENCY TODAY</Text>
+            <View style={styles.barTrack} onLayout={onTrackLayout}>
+              <Animated.View style={[styles.barFillCurrent, { width: currentBarWidth }]}>
+                <View style={styles.barFillInner} />
+              </Animated.View>
             </View>
             <View style={styles.barNumbers}>
               <Text style={styles.barPct}>{consistencyPct}%</Text>
@@ -143,11 +166,14 @@ export default function UnlockScreen() {
             </View>
           </Animated.View>
 
-          <Animated.View style={[{ marginTop: 20 }, { opacity: barAnim.interpolate({ inputRange: [0, 0.7, 1], outputRange: [0, 0, 1] }) }]}>
-            <Text style={styles.barLabelGreen}>With Volera</Text>
+          <Animated.View style={[styles.voleraBarWrap, { opacity: barAnim.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0, 0, 1] }) }]}>
+            <View style={styles.voleraLabelRow}>
+              <Zap size={12} color="#34D399" strokeWidth={2.5} />
+              <Text style={styles.barLabelGreen}>WITH VOLERA</Text>
+            </View>
             <View style={styles.barTrack}>
               <Animated.View style={[styles.barFillFull, { width: fullBarWidth }]}>
-                <Animated.View style={[styles.barGlow, { opacity: glowAnim }]} />
+                <Animated.View style={[styles.shimmer, { left: shimmerLeft }]} />
               </Animated.View>
             </View>
             <View style={styles.barNumbers}>
@@ -158,9 +184,11 @@ export default function UnlockScreen() {
         </View>
 
         <Animated.View style={[styles.resultSection, fadeSlide(resultAnim)]}>
-          <Text style={styles.resultText}>
-            Every supplement you own{'\n'}finally doing its job.
-          </Text>
+          <Animated.View style={[styles.resultCard, { opacity: pulseAnim.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0.85, 1, 0.85] }) }]}>
+            <Text style={styles.resultText}>
+              Every supplement you own{'\n'}finally doing its job.
+            </Text>
+          </Animated.View>
         </Animated.View>
       </View>
 
@@ -174,7 +202,16 @@ export default function UnlockScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0B1A2E',
+    backgroundColor: '#070F1C',
+  },
+  bgGlow: {
+    position: 'absolute' as const,
+    top: -100,
+    left: SCREEN_WIDTH * 0.15,
+    width: SCREEN_WIDTH * 0.7,
+    height: 300,
+    borderRadius: 200,
+    backgroundColor: 'rgba(52, 211, 153, 0.04)',
   },
   content: {
     flex: 1,
@@ -182,133 +219,156 @@ const styles = StyleSheet.create({
     justifyContent: 'center' as const,
   },
   problemSection: {
-    marginBottom: 20,
+    marginBottom: 18,
   },
   problemText: {
     fontFamily: Fonts.heading,
-    fontSize: 28,
-    color: Colors.white,
-    lineHeight: 36,
-    letterSpacing: -0.3,
+    fontSize: 30,
+    color: '#F1F5F9',
+    lineHeight: 40,
+    letterSpacing: -0.5,
   },
   statCard: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    backgroundColor: 'rgba(255,77,77,0.1)',
-    borderRadius: 12,
-    paddingVertical: 12,
+    backgroundColor: 'rgba(255,107,107,0.08)',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255,107,107,0.12)',
+    paddingVertical: 14,
     paddingHorizontal: 16,
-    gap: 10,
+    gap: 12,
     marginBottom: 28,
   },
-  statDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#FF4D4D',
+  statIconWrap: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,107,107,0.12)',
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
   },
   statText: {
     fontFamily: Fonts.body,
     fontSize: 14,
-    color: 'rgba(255,255,255,0.55)',
+    color: 'rgba(255,255,255,0.6)',
     lineHeight: 20,
     flex: 1,
   },
   divider: {
     height: 1,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: 'rgba(255,255,255,0.06)',
     marginBottom: 28,
   },
   flipSection: {
-    marginBottom: 32,
+    marginBottom: 36,
   },
   flipText: {
     fontFamily: Fonts.heading,
     fontSize: 26,
-    color: '#4A90D9',
+    color: '#60A5FA',
     lineHeight: 34,
-    letterSpacing: -0.2,
+    letterSpacing: -0.3,
   },
   barSection: {
-    marginBottom: 32,
+    marginBottom: 28,
   },
   barLabel: {
     fontFamily: Fonts.bodySemiBold,
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.4)',
-    letterSpacing: 0.5,
+    fontSize: 11,
+    color: 'rgba(255,255,255,0.35)',
+    letterSpacing: 1.2,
     marginBottom: 10,
-    textTransform: 'uppercase' as const,
   },
   barLabelGreen: {
     fontFamily: Fonts.bodySemiBold,
-    fontSize: 12,
-    color: 'rgba(62,175,108,0.7)',
-    letterSpacing: 0.5,
+    fontSize: 11,
+    color: 'rgba(52,211,153,0.7)',
+    letterSpacing: 1.2,
+  },
+  voleraBarWrap: {
+    marginTop: 24,
+  },
+  voleraLabelRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 6,
     marginBottom: 10,
-    textTransform: 'uppercase' as const,
   },
   barTrack: {
-    height: 12,
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderRadius: 6,
+    height: 14,
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderRadius: 7,
     overflow: 'hidden' as const,
   },
   barFillCurrent: {
-    height: 12,
-    backgroundColor: '#E8A838',
-    borderRadius: 6,
-  },
-  barFillFull: {
-    height: 12,
-    backgroundColor: '#3EAF6C',
-    borderRadius: 6,
-    position: 'relative' as const,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#F59E0B',
     overflow: 'hidden' as const,
   },
-  barGlow: {
+  barFillInner: {
+    flex: 1,
+    borderRadius: 7,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+  },
+  barFillFull: {
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#34D399',
+    overflow: 'hidden' as const,
+  },
+  shimmer: {
     position: 'absolute' as const,
-    right: 0,
     top: 0,
     bottom: 0,
-    width: 40,
-    backgroundColor: 'rgba(255,255,255,0.3)',
-    borderRadius: 6,
+    width: 50,
+    backgroundColor: 'rgba(255,255,255,0.25)',
+    borderRadius: 7,
   },
   barNumbers: {
     flexDirection: 'row' as const,
     justifyContent: 'space-between' as const,
-    marginTop: 6,
+    marginTop: 8,
   },
   barPct: {
     fontFamily: Fonts.headingSemiBold,
-    fontSize: 14,
-    color: '#E8A838',
+    fontSize: 15,
+    color: '#F59E0B',
   },
   barWaste: {
     fontFamily: Fonts.body,
     fontSize: 12,
-    color: 'rgba(255,77,77,0.6)',
+    color: 'rgba(255,107,107,0.5)',
   },
   barPctGreen: {
     fontFamily: Fonts.headingSemiBold,
-    fontSize: 14,
-    color: '#3EAF6C',
+    fontSize: 15,
+    color: '#34D399',
   },
   barNone: {
     fontFamily: Fonts.body,
     fontSize: 12,
-    color: 'rgba(62,175,108,0.5)',
+    color: 'rgba(52,211,153,0.45)',
   },
   resultSection: {
-    paddingHorizontal: 4,
+    paddingHorizontal: 0,
+  },
+  resultCard: {
+    borderRadius: 16,
+    paddingVertical: 18,
+    paddingHorizontal: 20,
+    backgroundColor: 'rgba(52,211,153,0.06)',
+    borderWidth: 1,
+    borderColor: 'rgba(52,211,153,0.1)',
   },
   resultText: {
     fontFamily: Fonts.heading,
-    fontSize: 20,
-    color: 'rgba(255,255,255,0.7)',
+    fontSize: 19,
+    color: 'rgba(255,255,255,0.8)',
     lineHeight: 28,
     letterSpacing: -0.2,
+    textAlign: 'center' as const,
   },
   footer: {
     paddingHorizontal: 24,
