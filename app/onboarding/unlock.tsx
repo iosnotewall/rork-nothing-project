@@ -64,6 +64,11 @@ export default function UnlockScreen() {
   const btnAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(0)).current;
   const shimmerAnim = useRef(new Animated.Value(0)).current;
+  const restContentAnim = useRef(new Animated.Value(0)).current;
+
+  const [typedText, setTypedText] = useState<string>('');
+  const [typewriterDone, setTypewriterDone] = useState<boolean>(false);
+  const typewriterRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [trackWidth, setTrackWidth] = useState<number>(SCREEN_WIDTH - 80);
 
@@ -72,6 +77,21 @@ export default function UnlockScreen() {
     if (w > 0) {
       setTrackWidth(w);
     }
+  }, []);
+
+  const startTypewriter = useCallback((text: string) => {
+    let i = 0;
+    const speed = 45;
+    const tick = () => {
+      if (i <= text.length) {
+        setTypedText(text.slice(0, i));
+        i++;
+        typewriterRef.current = setTimeout(tick, speed);
+      } else {
+        setTypewriterDone(true);
+      }
+    };
+    tick();
   }, []);
 
   useEffect(() => {
@@ -85,18 +105,13 @@ export default function UnlockScreen() {
       Animated.delay(800),
       Animated.timing(lineAnim, { toValue: 1, duration: 300, useNativeDriver: useNative }),
       Animated.delay(200),
-      Animated.timing(flipAnim, { toValue: 1, duration: 700, useNativeDriver: useNative }),
-      Animated.delay(400),
-      Animated.timing(barAnim, { toValue: 1, duration: 1400, useNativeDriver: false }),
-      Animated.delay(200),
-      Animated.timing(resultAnim, { toValue: 1, duration: 500, useNativeDriver: useNative }),
-      Animated.delay(300),
-      Animated.timing(btnAnim, { toValue: 1, duration: 400, useNativeDriver: useNative }),
+      Animated.timing(flipAnim, { toValue: 1, duration: 100, useNativeDriver: useNative }),
     ]).start();
 
-    setTimeout(() => {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-    }, 3800);
+    const typewriterDelay = 400 + 700 + 300 + 500 + 800 + 300 + 200 + 100;
+    const typewriterTimeout = setTimeout(() => {
+      startTypewriter(reframe.flip);
+    }, typewriterDelay);
 
     Animated.loop(
       Animated.sequence([
@@ -108,7 +123,32 @@ export default function UnlockScreen() {
     Animated.loop(
       Animated.timing(shimmerAnim, { toValue: 1, duration: 2500, useNativeDriver: false }),
     ).start();
+
+    return () => {
+      clearTimeout(typewriterTimeout);
+      if (typewriterRef.current) clearTimeout(typewriterRef.current);
+    };
   }, []);
+
+  useEffect(() => {
+    if (!typewriterDone) return;
+    const useNative = Platform.OS !== 'web';
+
+    Animated.sequence([
+      Animated.delay(300),
+      Animated.timing(restContentAnim, { toValue: 1, duration: 600, useNativeDriver: useNative }),
+      Animated.delay(200),
+      Animated.timing(barAnim, { toValue: 1, duration: 1400, useNativeDriver: false }),
+      Animated.delay(200),
+      Animated.timing(resultAnim, { toValue: 1, duration: 500, useNativeDriver: useNative }),
+      Animated.delay(300),
+      Animated.timing(btnAnim, { toValue: 1, duration: 400, useNativeDriver: useNative }),
+    ]).start();
+
+    setTimeout(() => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+    }, 500);
+  }, [typewriterDone]);
 
   const fadeSlide = (anim: Animated.Value, dist = 18) => ({
     opacity: anim,
@@ -148,11 +188,14 @@ export default function UnlockScreen() {
 
         <Animated.View style={[styles.divider, { opacity: lineAnim, transform: [{ scaleX: lineAnim }] }]} />
 
-        <Animated.View style={[styles.flipSection, fadeSlide(flipAnim)]}>
-          <Text style={styles.flipText}>{reframe.flip}</Text>
+        <Animated.View style={[styles.flipSection, { opacity: flipAnim }]}>
+          <Text style={styles.flipText}>
+            {typedText}
+            {!typewriterDone && <Text style={styles.cursor}>|</Text>}
+          </Text>
         </Animated.View>
 
-        <View style={styles.barSection}>
+        <Animated.View style={[styles.barSection, fadeSlide(restContentAnim)]}>
           <Animated.View style={{ opacity: barAnim }}>
             <Text style={styles.barLabel}>YOUR CONSISTENCY TODAY</Text>
             <View style={styles.barTrack} onLayout={onTrackLayout}>
@@ -181,7 +224,7 @@ export default function UnlockScreen() {
               <Text style={styles.barNone}>0% wasted</Text>
             </View>
           </Animated.View>
-        </View>
+        </Animated.View>
 
         <Animated.View style={[styles.resultSection, fadeSlide(resultAnim)]}>
           <Animated.View style={[styles.resultCard, { opacity: pulseAnim.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0.85, 1, 0.85] }) }]}>
@@ -266,9 +309,14 @@ const styles = StyleSheet.create({
   flipText: {
     fontFamily: Fonts.heading,
     fontSize: 26,
-    color: '#60A5FA',
+    color: '#FFFFFF',
     lineHeight: 34,
     letterSpacing: -0.3,
+  },
+  cursor: {
+    fontFamily: Fonts.heading,
+    fontSize: 26,
+    color: 'rgba(255,255,255,0.5)',
   },
   barSection: {
     marginBottom: 28,
