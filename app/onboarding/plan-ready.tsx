@@ -39,7 +39,7 @@ export default function PlanReadyScreen() {
   });
 
   return (
-    <OnboardingScreen step={8} totalSteps={9} ctaText="I'm ready" onCta={() => router.push('/onboarding/commitment' as any)}>
+    <OnboardingScreen step={8} totalSteps={9} ctaText="I'm ready" onCta={() => router.push('/onboarding/paywall' as any)}>
       <View style={styles.center}>
         <Animated.Text style={[styles.readyLabel, fadeSlide(readyAnim)]}>
           Your protocol is ready{userName ? `, ${userName}` : ''}.

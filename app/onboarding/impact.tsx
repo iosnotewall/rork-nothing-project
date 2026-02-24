@@ -105,7 +105,7 @@ export default function ImpactScreen() {
     router.push('/onboarding/goal' as any);
   }, [router]);
 
-  const namePrefix = userName ? `${userName},` : 'Your';
+  const namePrefix = userName ? `${userName}, your` : 'Your';
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -169,7 +169,7 @@ export default function ImpactScreen() {
       </View>
 
       <Animated.View style={[styles.footer, { opacity: btnAnim, paddingBottom: Math.max(insets.bottom, 20) }]}>
-        <PrimaryButton title="What can I do?" onPress={handleContinue} variant="white" />
+        <PrimaryButton title="I want to fix this" onPress={handleContinue} variant="white" />
       </Animated.View>
     </View>
   );

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, Animated, Platform, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Path, Circle, Defs, RadialGradient, Stop, Rect } from 'react-native-svg';
+import Svg, { Path, Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
 import Colors from '@/constants/colors';
 import { Fonts } from '@/constants/fonts';
 import PrimaryButton from '@/components/PrimaryButton';
@@ -11,57 +11,99 @@ import { useAppState } from '@/hooks/useAppState';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const GRAPH_HORIZONTAL_PADDING = 24;
 const GRAPH_WIDTH = SCREEN_WIDTH - GRAPH_HORIZONTAL_PADDING * 2 - 32;
-const GRAPH_CURVES_HEIGHT = 200;
+const GRAPH_HEIGHT = 220;
 
-const ACCENT_COLOR = Colors.blue;
+const ACCENT_COLOR = '#4A90D9';
 const RED_COLOR = '#FF3B3B';
 
 function generateUpwardPath(w: number, h: number): string {
-  const sx = 20;
-  const sy = h - 30;
-  const ex = w - 20;
-  const ey = 30;
-  const c1x = w * 0.3;
-  const c1y = h - 20;
-  const c2x = w * 0.6;
-  const c2y = 50;
+  const sx = 16;
+  const sy = h - 40;
+  const ex = w - 16;
+  const ey = 28;
+  const c1x = w * 0.25;
+  const c1y = h - 30;
+  const c2x = w * 0.55;
+  const c2y = 40;
   return `M ${sx} ${sy} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${ex} ${ey}`;
 }
 
-function generateDownwardPath(w: number, h: number): string {
-  const sx = 20;
-  const sy = h - 30;
-  const ex = w - 20;
-  const ey = h - 10;
-  const c1x = w * 0.35;
-  const c1y = h * 0.4;
-  const c2x = w * 0.65;
-  const c2y = h - 5;
-  return `M ${sx} ${sy} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${ex} ${ey}`;
+function generateBumpyDownwardPath(w: number, h: number): string {
+  const sx = 16;
+  const sy = h - 40;
+
+  const points = [
+    { x: w * 0.08, y: h - 55 },
+    { x: w * 0.13, y: h - 38 },
+    { x: w * 0.18, y: h - 62 },
+    { x: w * 0.24, y: h - 45 },
+    { x: w * 0.30, y: h - 70 },
+    { x: w * 0.36, y: h - 52 },
+    { x: w * 0.42, y: h - 65 },
+    { x: w * 0.48, y: h - 48 },
+    { x: w * 0.54, y: h - 58 },
+    { x: w * 0.60, y: h - 42 },
+    { x: w * 0.66, y: h - 50 },
+    { x: w * 0.72, y: h - 38 },
+    { x: w * 0.78, y: h - 44 },
+    { x: w * 0.84, y: h - 32 },
+    { x: w * 0.90, y: h - 36 },
+    { x: w * 0.95, y: h - 28 },
+  ];
+
+  let path = `M ${sx} ${sy}`;
+  let prevX = sx;
+  let prevY = sy;
+
+  for (const pt of points) {
+    const cpx1 = prevX + (pt.x - prevX) * 0.5;
+    const cpy1 = prevY;
+    const cpx2 = prevX + (pt.x - prevX) * 0.5;
+    const cpy2 = pt.y;
+    path += ` C ${cpx1} ${cpy1}, ${cpx2} ${cpy2}, ${pt.x} ${pt.y}`;
+    prevX = pt.x;
+    prevY = pt.y;
+  }
+
+  return path;
 }
 
 function getPathLength(pathData: string): number {
-  const parts = pathData.replace(/[MCc]/g, '').trim().split(/[\s,]+/).map(Number);
-  const sx = parts[0], sy = parts[1];
-  const c1x = parts[2], c1y = parts[3];
-  const c2x = parts[4], c2y = parts[5];
-  const ex = parts[6], ey = parts[7];
+  const segments = pathData.split(/(?=[MC])/);
+  let totalLength = 0;
+  let currentX = 0;
+  let currentY = 0;
 
-  let length = 0;
-  let prevX = sx, prevY = sy;
-  const steps = 100;
-  for (let i = 1; i <= steps; i++) {
-    const t = i / steps;
-    const mt = 1 - t;
-    const x = mt * mt * mt * sx + 3 * mt * mt * t * c1x + 3 * mt * t * t * c2x + t * t * t * ex;
-    const y = mt * mt * mt * sy + 3 * mt * mt * t * c1y + 3 * mt * t * t * c2y + t * t * t * ey;
-    const dx = x - prevX;
-    const dy = y - prevY;
-    length += Math.sqrt(dx * dx + dy * dy);
-    prevX = x;
-    prevY = y;
+  for (const segment of segments) {
+    const trimmed = segment.trim();
+    if (trimmed.startsWith('M')) {
+      const coords = trimmed.substring(1).trim().split(/[\s,]+/).map(Number);
+      currentX = coords[0];
+      currentY = coords[1];
+    } else if (trimmed.startsWith('C')) {
+      const coords = trimmed.substring(1).trim().split(/[\s,]+/).map(Number);
+      const c1x = coords[0], c1y = coords[1];
+      const c2x = coords[2], c2y = coords[3];
+      const ex = coords[4], ey = coords[5];
+
+      let prevX = currentX, prevY = currentY;
+      const steps = 20;
+      for (let i = 1; i <= steps; i++) {
+        const t = i / steps;
+        const mt = 1 - t;
+        const x = mt * mt * mt * currentX + 3 * mt * mt * t * c1x + 3 * mt * t * t * c2x + t * t * t * ex;
+        const y = mt * mt * mt * currentY + 3 * mt * mt * t * c1y + 3 * mt * t * t * c2y + t * t * t * ey;
+        const dx = x - prevX;
+        const dy = y - prevY;
+        totalLength += Math.sqrt(dx * dx + dy * dy);
+        prevX = x;
+        prevY = y;
+      }
+      currentX = ex;
+      currentY = ey;
+    }
   }
-  return length;
+  return totalLength;
 }
 
 export default function TrajectoryScreen() {
@@ -80,13 +122,12 @@ export default function TrajectoryScreen() {
   const labelsAnim = useRef(new Animated.Value(0)).current;
   const bottomAnim = useRef(new Animated.Value(0)).current;
   const btnAnim = useRef(new Animated.Value(0)).current;
-  const dotPulse = useRef(new Animated.Value(0)).current;
 
   const [upDash, setUpDash] = useState<{ length: number; offset: number }>({ length: 0, offset: 0 });
   const [downDash, setDownDash] = useState<{ length: number; offset: number }>({ length: 0, offset: 0 });
 
-  const upPath = generateUpwardPath(GRAPH_WIDTH, GRAPH_CURVES_HEIGHT);
-  const downPath = generateDownwardPath(GRAPH_WIDTH, GRAPH_CURVES_HEIGHT);
+  const upPath = generateUpwardPath(GRAPH_WIDTH, GRAPH_HEIGHT);
+  const downPath = generateBumpyDownwardPath(GRAPH_WIDTH, GRAPH_HEIGHT);
 
   const upLength = useRef(getPathLength(upPath)).current;
   const downLength = useRef(getPathLength(downPath)).current;
@@ -115,7 +156,7 @@ export default function TrajectoryScreen() {
         Animated.timing(upCurveAnim, { toValue: 1, duration: 1500, useNativeDriver: false }),
         Animated.sequence([
           Animated.delay(200),
-          Animated.timing(downCurveAnim, { toValue: 1, duration: 1500, useNativeDriver: false }),
+          Animated.timing(downCurveAnim, { toValue: 1, duration: 1800, useNativeDriver: false }),
         ]),
       ]),
       Animated.delay(200),
@@ -125,13 +166,6 @@ export default function TrajectoryScreen() {
       Animated.delay(200),
       Animated.timing(btnAnim, { toValue: 1, duration: 500, useNativeDriver: useNative }),
     ]).start();
-
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(dotPulse, { toValue: 1, duration: 1200, useNativeDriver: useNative }),
-        Animated.timing(dotPulse, { toValue: 0.4, duration: 1200, useNativeDriver: useNative }),
-      ])
-    ).start();
 
     return () => {
       upCurveAnim.removeListener(upListener);
@@ -144,7 +178,7 @@ export default function TrajectoryScreen() {
     transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [distance, 0] }) }],
   });
 
-  const endPointUp = { x: GRAPH_WIDTH - 20, y: 30 };
+  const endPointUp = { x: GRAPH_WIDTH - 16, y: 28 };
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -165,40 +199,28 @@ export default function TrajectoryScreen() {
         <Animated.View style={[styles.graphContainer, { opacity: graphAnim }]}>
           <View style={styles.graphInner}>
             <View style={styles.curvesArea}>
-              <Svg width={GRAPH_WIDTH} height={GRAPH_CURVES_HEIGHT}>
+              <Svg width={GRAPH_WIDTH} height={GRAPH_HEIGHT}>
                 <Defs>
-                  <RadialGradient id="blueGlow" cx="50%" cy="50%" r="50%">
-                    <Stop offset="0%" stopColor={ACCENT_COLOR} stopOpacity="0.4" />
-                    <Stop offset="100%" stopColor={ACCENT_COLOR} stopOpacity="0" />
-                  </RadialGradient>
-                  <RadialGradient id="redGlow" cx="50%" cy="50%" r="50%">
-                    <Stop offset="0%" stopColor={RED_COLOR} stopOpacity="0.3" />
-                    <Stop offset="100%" stopColor={RED_COLOR} stopOpacity="0" />
-                  </RadialGradient>
+                  <LinearGradient id="blueGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+                    <Stop offset="0%" stopColor={ACCENT_COLOR} stopOpacity="0.3" />
+                    <Stop offset="100%" stopColor={ACCENT_COLOR} stopOpacity="0.8" />
+                  </LinearGradient>
                 </Defs>
-
-                <Rect
-                  x={endPointUp.x - 30}
-                  y={endPointUp.y - 30}
-                  width={60}
-                  height={60}
-                  fill="url(#blueGlow)"
-                />
 
                 <Path
                   d={downPath}
                   stroke={RED_COLOR}
-                  strokeWidth={3.5}
+                  strokeWidth={2.5}
                   fill="none"
                   strokeLinecap="round"
                   strokeDasharray={`${downDash.length}, ${downLength}`}
-                  opacity={0.85}
+                  opacity={0.7}
                 />
 
                 <Path
                   d={upPath}
-                  stroke={ACCENT_COLOR}
-                  strokeWidth={3.5}
+                  stroke="url(#blueGrad)"
+                  strokeWidth={3}
                   fill="none"
                   strokeLinecap="round"
                   strokeDasharray={`${upDash.length}, ${upLength}`}
@@ -234,15 +256,12 @@ export default function TrajectoryScreen() {
         </Animated.View>
 
         <Animated.View style={[styles.bottomSection, fadeSlide(bottomAnim)]}>
-          <Text style={styles.bottomTitle}>Consistency changes everything.</Text>
-          <Text style={styles.bottomBody}>
-            Volera turns missed doses into daily wins — so your supplements finally deliver what you paid for.
-          </Text>
+          <Text style={styles.bottomTitle}>Consistency is the only variable.</Text>
         </Animated.View>
       </View>
 
       <Animated.View style={[styles.footer, { opacity: btnAnim, paddingBottom: Math.max(insets.bottom, 20) }]}>
-        <PrimaryButton title="Let's build my plan" onPress={() => router.push('/onboarding/reality' as any)} variant="white" />
+        <PrimaryButton title="How it works" onPress={() => router.push('/onboarding/placeholder' as any)} variant="white" />
       </Animated.View>
     </View>
   );
@@ -295,14 +314,14 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   curvesArea: {
-    height: GRAPH_CURVES_HEIGHT,
+    height: GRAPH_HEIGHT,
     paddingHorizontal: 16,
     position: 'relative' as const,
   },
   labelUp: {
     position: 'absolute' as const,
-    top: 12,
-    left: 20,
+    top: 10,
+    right: 20,
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
     backgroundColor: 'rgba(74,144,217,0.15)',
@@ -313,11 +332,11 @@ const styles = StyleSheet.create({
   },
   labelDown: {
     position: 'absolute' as const,
-    bottom: 28,
-    right: 20,
+    top: 48,
+    left: 20,
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    backgroundColor: 'rgba(255,59,59,0.15)',
+    backgroundColor: 'rgba(255,59,59,0.12)',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
@@ -351,17 +370,9 @@ const styles = StyleSheet.create({
   },
   bottomTitle: {
     fontFamily: Fonts.heading,
-    fontSize: 24,
+    fontSize: 22,
     color: Colors.white,
     textAlign: 'center' as const,
-    marginBottom: 12,
-  },
-  bottomBody: {
-    fontFamily: Fonts.body,
-    fontSize: 16,
-    color: 'rgba(255,255,255,0.6)',
-    textAlign: 'center' as const,
-    lineHeight: 24,
   },
   footer: {
     paddingHorizontal: 24,
