@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated, ScrollView, Platform } from 'react-native';
+import { Clock, Brain, RefreshCw, BatteryLow, HelpCircle } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import OnboardingScreen from '@/components/OnboardingScreen';
@@ -43,7 +44,14 @@ export default function FrictionScreen() {
                   style={[styles.optionCard, isSelected && styles.optionSelected]}
                   activeOpacity={0.7}
                 >
-                  <Text style={[styles.optionLabel, isSelected && styles.optionLabelSelected]}>{option.label}</Text>
+                  <View style={styles.optionRow}>
+                    {option.icon === 'Clock' && <Clock size={20} color={isSelected ? Colors.blue : Colors.mediumGray} strokeWidth={1.8} />}
+                    {option.icon === 'Brain' && <Brain size={20} color={isSelected ? Colors.blue : Colors.mediumGray} strokeWidth={1.8} />}
+                    {option.icon === 'RefreshCw' && <RefreshCw size={20} color={isSelected ? Colors.blue : Colors.mediumGray} strokeWidth={1.8} />}
+                    {option.icon === 'BatteryLow' && <BatteryLow size={20} color={isSelected ? Colors.blue : Colors.mediumGray} strokeWidth={1.8} />}
+                    {option.icon === 'HelpCircle' && <HelpCircle size={20} color={isSelected ? Colors.blue : Colors.mediumGray} strokeWidth={1.8} />}
+                    <Text style={[styles.optionLabel, isSelected && styles.optionLabelSelected]}>{option.label}</Text>
+                  </View>
                 </TouchableOpacity>
               </Animated.View>
             );
@@ -66,6 +74,11 @@ const styles = StyleSheet.create({
   options: {
     gap: 12,
     paddingBottom: 20,
+  },
+  optionRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 14,
   },
   optionCard: {
     backgroundColor: Colors.white,
