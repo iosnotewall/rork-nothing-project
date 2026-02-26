@@ -58,7 +58,7 @@ const DEFAULT_STATE: AppState = {
   totalDaysTaken: 0,
   lastCheckedIn: null,
   checkInHistory: [],
-  onboardingComplete: false,
+  onboardingComplete: true, // DEBUG: skip onboarding
   notificationsEnabled: false,
   frequency: 0,
   friction: '',
