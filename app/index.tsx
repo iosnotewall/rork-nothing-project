@@ -20,7 +20,7 @@ export default function IndexScreen() {
   }
 
   console.log('Index: Redirecting to onboarding');
-  return <Redirect href={"/onboarding/welcome" as any} />;
+  return <Redirect href={"/onboarding/trajectory" as any} />;
 }
 
 const styles = StyleSheet.create({
