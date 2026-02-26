@@ -48,11 +48,10 @@ const DEFAULT_REFRAME = {
 export default function UnlockScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { friction, missedDoses } = useAppState();
+  const { friction, missedDoses, missedDosesPct } = useAppState();
 
   const reframe = FRICTION_REFRAMES[friction] ?? DEFAULT_REFRAME;
-  const daysPerWeek = missedDoses ?? 3;
-  const consistencyPct = Math.round((daysPerWeek / 7) * 100);
+  const consistencyPct = missedDosesPct > 0 ? Math.round(missedDosesPct) : Math.round(((missedDoses ?? 3) / 7) * 100);
   const wastePct = 100 - consistencyPct;
 
   const problemAnim = useRef(new Animated.Value(0)).current;

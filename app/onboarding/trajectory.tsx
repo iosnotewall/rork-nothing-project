@@ -109,10 +109,9 @@ function getPathLength(pathData: string): number {
 export default function TrajectoryScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { missedDoses } = useAppState();
+  const { missedDoses, missedDosesPct } = useAppState();
 
-  const daysPerWeek = missedDoses ?? 3;
-  const consistencyPct = Math.round((daysPerWeek / 7) * 100);
+  const consistencyPct = missedDosesPct > 0 ? Math.round(missedDosesPct) : Math.round(((missedDoses ?? 3) / 7) * 100);
 
   const titleAnim = useRef(new Animated.Value(0)).current;
   const subtitleAnim = useRef(new Animated.Value(0)).current;

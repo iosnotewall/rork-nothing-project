@@ -21,6 +21,7 @@ export interface AppState {
   energyLevel: number;
   commitmentLevel: string;
   missedDoses: number;
+  missedDosesPct: number;
 }
 
 const DEFAULT_STATE: AppState = {
@@ -41,6 +42,7 @@ const DEFAULT_STATE: AppState = {
   energyLevel: 0,
   commitmentLevel: '',
   missedDoses: 0,
+  missedDosesPct: 0,
 };
 
 const STORAGE_KEY = 'ivb_app_state';

@@ -15,24 +15,28 @@ const OPTIONS = [
     label: '1-2 days a week',
     desc: 'I forget more than I remember',
     value: 2,
+    pct: 21.4,
   },
   {
     id: 'three-four' as const,
     label: '3-4 days a week',
     desc: 'I try but life gets in the way',
     value: 4,
+    pct: 50,
   },
   {
     id: 'five-six' as const,
     label: '5-6 days a week',
     desc: 'Pretty good, just slip sometimes',
     value: 6,
+    pct: 78.5,
   },
   {
     id: 'every-day' as const,
     label: 'Every single day',
     desc: 'Locked in, never miss',
     value: 7,
+    pct: 100,
   },
 ];
 
@@ -128,7 +132,7 @@ export default function MissedDosesScreen() {
     const option = OPTIONS.find(o => o.id === selected);
     if (!option) return;
 
-    updateState({ missedDoses: option.value });
+    updateState({ missedDoses: option.value, missedDosesPct: option.pct });
 
     router.push('/onboarding/impact' as any);
   }, [selected, updateState, router]);

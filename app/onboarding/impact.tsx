@@ -20,10 +20,9 @@ const GAUGE_BG_COLOR = 'rgba(255,255,255,0.08)';
 export default function ImpactScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { userName, missedDoses } = useAppState();
+  const { userName, missedDoses, missedDosesPct } = useAppState();
 
-  const daysPerWeek = missedDoses ?? 3;
-  const consistencyPct = Math.round((daysPerWeek / 7) * 100);
+  const consistencyPct = missedDosesPct > 0 ? Math.round(missedDosesPct) : Math.round(((missedDoses ?? 3) / 7) * 100);
   const isPerfect = consistencyPct >= 100;
 
   const sceneAnim = useRef(new Animated.Value(0)).current;
