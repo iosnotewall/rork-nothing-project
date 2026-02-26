@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Animated, Platform, Dimensions, TouchableOpacity, Modal, Pressable } from 'react-native';
-import { X, Zap, Calendar, TrendingUp } from 'lucide-react-native';
+import { X, CheckCircle, Bell, BarChart3 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -350,51 +350,54 @@ export default function TrajectoryScreen() {
           <Animated.View style={[styles.modalCard, { opacity: modalCardAnim, transform: [{ scale: modalScaleAnim }] }]}>
             <TouchableOpacity style={styles.modalClose} onPress={closeModal} activeOpacity={0.7}>
               <View style={styles.modalCloseCircle}>
-                <X size={16} color="#999" strokeWidth={2.5} />
+                <X size={14} color="rgba(255,255,255,0.5)" strokeWidth={2.5} />
               </View>
             </TouchableOpacity>
 
-            <View style={styles.modalIconWrap}>
-              <Zap size={28} color={ACCENT_COLOR} strokeWidth={2} />
-            </View>
-
-            <Text style={styles.modalTitle}>how it works</Text>
+            <Text style={styles.modalLabel}>HOW VOLERA WORKS</Text>
+            <Text style={styles.modalTitle}>Three steps to{"\n"}real results.</Text>
 
             <View style={styles.stepsContainer}>
               <View style={styles.stepRow}>
-                <View style={[styles.stepBadge, { backgroundColor: ACCENT_COLOR }]}>
-                  <Text style={styles.stepNumber}>1</Text>
+                <View style={styles.stepIconWrap}>
+                  <CheckCircle size={20} color={ACCENT_COLOR} strokeWidth={2} />
                 </View>
                 <View style={styles.stepTextWrap}>
-                  <Text style={styles.stepText}>check in daily</Text>
-                  <Text style={styles.stepSub}>10 seconds. rate your energy, sleep & mood.</Text>
+                  <Text style={styles.stepText}>Check in daily</Text>
+                  <Text style={styles.stepSub}>10 seconds. Rate your energy, sleep & mood — that's it.</Text>
                 </View>
               </View>
 
+              <View style={styles.stepDivider} />
+
               <View style={styles.stepRow}>
-                <View style={[styles.stepBadge, { backgroundColor: ACCENT_COLOR }]}>
-                  <Text style={styles.stepNumber}>2</Text>
+                <View style={styles.stepIconWrap}>
+                  <Bell size={20} color={ACCENT_COLOR} strokeWidth={2} />
                 </View>
                 <View style={styles.stepTextWrap}>
-                  <Text style={styles.stepText}>stay consistent</Text>
-                  <Text style={styles.stepSub}>smart reminders so you never miss a dose.</Text>
+                  <Text style={styles.stepText}>Stay on track</Text>
+                  <Text style={styles.stepSub}>Smart reminders built around your routine. No spam, just timing.</Text>
                 </View>
               </View>
 
+              <View style={styles.stepDivider} />
+
               <View style={styles.stepRow}>
-                <View style={[styles.stepBadge, { backgroundColor: ACCENT_COLOR }]}>
-                  <Text style={styles.stepNumber}>3</Text>
+                <View style={styles.stepIconWrap}>
+                  <BarChart3 size={20} color={ACCENT_COLOR} strokeWidth={2} />
                 </View>
                 <View style={styles.stepTextWrap}>
-                  <Text style={styles.stepText}>see real results</Text>
-                  <Text style={styles.stepSub}>proof your supplements work — in 30 days.</Text>
+                  <Text style={styles.stepText}>See proof in 30 days</Text>
+                  <Text style={styles.stepSub}>Your personal data proves your supplements are working.</Text>
                 </View>
               </View>
             </View>
 
-            <Text style={styles.modalFooterText}>
-              your supplements already work.{"\n"}Volera makes sure <Text style={styles.modalFooterBold}>you</Text> do too.
-            </Text>
+            <View style={styles.modalFooterWrap}>
+              <Text style={styles.modalFooterText}>
+                Your supplements already work.{"\n"}Volera makes sure <Text style={styles.modalFooterBold}>you</Text> do too.
+              </Text>
+            </View>
 
             <TouchableOpacity
               style={styles.modalGetStarted}
@@ -545,116 +548,130 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
   },
   modalCard: {
-    width: SCREEN_WIDTH - 48,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    paddingTop: 32,
-    paddingBottom: 28,
+    width: SCREEN_WIDTH - 40,
+    backgroundColor: '#0F2340',
+    borderRadius: 28,
+    paddingTop: 40,
+    paddingBottom: 32,
     paddingHorizontal: 28,
-    alignItems: 'center' as const,
+    borderWidth: 1,
+    borderColor: 'rgba(74,144,217,0.15)',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.25,
-    shadowRadius: 24,
-    elevation: 20,
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 0.5,
+    shadowRadius: 40,
+    elevation: 24,
   },
   modalClose: {
     position: 'absolute' as const,
-    top: 14,
-    right: 14,
+    top: 16,
+    right: 16,
     zIndex: 10,
   },
   modalCloseCircle: {
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: '#F0F0F0',
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
   },
-  modalIconWrap: {
-    width: 56,
-    height: 56,
-    borderRadius: 16,
-    backgroundColor: 'rgba(74,144,217,0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(74,144,217,0.2)',
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-    marginBottom: 20,
+  modalLabel: {
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 11,
+    color: ACCENT_COLOR,
+    letterSpacing: 1.5,
+    fontWeight: '600' as const,
+    marginBottom: 12,
   },
   modalTitle: {
     fontFamily: Fonts.heading,
-    fontSize: 24,
-    color: '#1A1A1A',
-    letterSpacing: -0.3,
-    marginBottom: 28,
+    fontSize: 26,
+    color: '#FFFFFF',
+    letterSpacing: -0.5,
+    lineHeight: 34,
+    marginBottom: 32,
   },
   stepsContainer: {
     width: '100%' as const,
-    gap: 20,
     marginBottom: 28,
   },
   stepRow: {
     flexDirection: 'row' as const,
     alignItems: 'flex-start' as const,
-    gap: 14,
+    gap: 16,
+    paddingVertical: 4,
   },
-  stepBadge: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+  stepIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: 'rgba(74,144,217,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(74,144,217,0.2)',
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
-    marginTop: 1,
+    marginTop: 2,
   },
-  stepNumber: {
-    fontFamily: Fonts.bodySemiBold,
-    fontSize: 14,
-    color: '#FFFFFF',
-    fontWeight: '700' as const,
+  stepDivider: {
+    height: 1,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    marginVertical: 16,
+    marginLeft: 56,
   },
   stepTextWrap: {
     flex: 1,
+    paddingTop: 2,
   },
   stepText: {
     fontFamily: Fonts.bodySemiBold,
     fontSize: 16,
-    color: '#1A1A1A',
+    color: '#FFFFFF',
     fontWeight: '600' as const,
-    marginBottom: 2,
+    marginBottom: 4,
   },
   stepSub: {
     fontFamily: Fonts.bodyMedium,
     fontSize: 13,
-    color: '#888',
-    lineHeight: 18,
+    color: 'rgba(255,255,255,0.45)',
+    lineHeight: 19,
+  },
+  modalFooterWrap: {
+    width: '100%' as const,
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderRadius: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   modalFooterText: {
     fontFamily: Fonts.bodyMedium,
     fontSize: 14,
-    color: '#AAA',
+    color: 'rgba(255,255,255,0.5)',
     textAlign: 'center' as const,
-    lineHeight: 20,
-    marginBottom: 24,
+    lineHeight: 21,
   },
   modalFooterBold: {
     fontFamily: Fonts.bodySemiBold,
     fontWeight: '600' as const,
-    color: '#888',
+    color: '#FFFFFF',
   },
   modalGetStarted: {
     width: '100%' as const,
-    height: 52,
+    height: 54,
     borderRadius: 100,
-    backgroundColor: ACCENT_COLOR,
+    backgroundColor: '#FFFFFF',
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
   },
   modalGetStartedText: {
     fontFamily: Fonts.bodySemiBold,
-    fontSize: 16,
-    color: '#FFFFFF',
+    fontSize: 15,
+    color: '#0B1A2E',
     fontWeight: '600' as const,
     letterSpacing: 0.2,
   },
